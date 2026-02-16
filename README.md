@@ -1,0 +1,540 @@
+[index.txt](https://github.com/user-attachments/files/25345686/index.txt)
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador BBVA - Altamira y Emulación SUN</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-cyan: #00FFFF;
+            --text-green: #00FF00;
+            --text-white: #FFFFFF;
+            --text-yellow: #FFFF00;
+            --text-red: #FF0000;
+            --text-blue: #5555FF;
+            --font-main: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: #222;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-main);
+        }
+
+        #terminal-container {
+            width: 100%;
+            max-width: 950px;
+            height: 650px;
+            background-color: var(--bg-color);
+            border: 3px solid #555;
+            padding: 15px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            text-transform: uppercase;
+            font-size: 15px;
+            line-height: 1.2;
+        }
+
+        .screen { display: none; height: 100%; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        /* Utilidades de color */
+        .cyan { color: var(--text-cyan); }
+        .green { color: var(--text-green); }
+        .white { color: var(--text-white); }
+        .yellow { color: var(--text-yellow); }
+        .red { color: var(--text-red); }
+        .blue { color: var(--text-blue); }
+        
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        /* Inputs invisibles */
+        input {
+            background: transparent;
+            border: none;
+            font-family: var(--font-main);
+            font-size: 1em;
+            outline: none;
+            text-transform: uppercase;
+            caret-color: var(--text-cyan);
+            padding: 0;
+            margin: 0;
+        }
+        
+        .input-cyan { color: var(--text-cyan); }
+        .input-white { color: var(--text-white); }
+        .input-green { color: var(--text-green); }
+        .input-yellow { color: var(--text-yellow); }
+
+        /* Componentes específicos */
+        .ascii-art { white-space: pre; font-size: 13px; line-height: 1.1; margin-bottom: 20px; }
+        .header-bar { border-bottom: 1px dashed; margin-bottom: 10px; padding-bottom: 5px; }
+        .footer-bar { margin-top: auto; border-top: 1px solid; padding-top: 5px; }
+        .menu-grid { display: grid; grid-template-columns: auto auto auto auto; gap: 10px; font-size: 14px; }
+        .red-box { border: 2px solid var(--text-red); padding: 10px; text-align: center; max-width: 600px; margin: 0 auto; }
+        
+        .flex-row { display: flex; gap: 10px; }
+        .error-msg { color: var(--text-red); display: none; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="terminal-container" class="cyan">
+        
+        <div id="screen-app-select" class="screen active cyan">
+            <div class="ascii-art green" style="text-align: center;">
+BBBBBBBBBBB    BBBBBBBBBBB    VVVV      VVVV       AAAA
+BBBB     BB    BBBB     BB    VVVV      VVVV      AAAAAA
+BBBB     BB    BBBB     BB    VVVV      VVVV     AAA  AAA
+BBBBBBBBBBB    BBBBBBBBBBB    VVVV      VVVV    AAA    AAA
+BBBB     BB    BBBB     BB    VVVV      VVVV   AAAAAAAAAAAA
+BBBB     BB    BBBB     BB     VVVV    VVVV    AAAAAAAAAAAA
+BBBBBBBBBBB    BBBBBBBBBBB       VVVVVVVV      AAA      AAA
+                                   VVVV        AAA      AAA
+            </div>
+            <br>
+            <div style="text-align: center; margin-bottom: 30px;" class="cyan">GRUPO FINANCIERO BBVA BANCOMER</div>
+            <div class="menu-grid cyan">
+                <div>A  ALTAMIRA PRODUCCION</div><div>I  REPORT CONTAB FIL.</div><div>S  BURSAT-FIDEI-PREST HIPOT</div>
+                <div>B  CICS DESAR ALTAM</div><div>K  TSO PROD. ALTAM</div><div>V  TSO DESAR. MEXF</div>
+                <div>C  TSO DESAR. MEXD</div><div>M  CONSULTAS CONTROL-M</div><div>W  TSO AFP1 PROD (MEX-COL)</div>
+                <div>D  DILINTEL Y S.A.R.</div><div>N  CONTROL-M CASA BOLSA</div><div>X  TSO AFP2 PROD (CHIL-PER)</div>
+                <div>E  CLP (CENTRO INFO.)</div><div>O  M.U.V. (SIVA)</div><div>Z  MP FINANZIA PRODUCCION</div>
+                <div>G  AFP PRODUCCION MEX</div><div>Q  CICS CALIDAD ALTAM</div><div></div>
+                <div>H  AFP REPORTES MEXICO</div><div>R  REPORTES CONTROL-D</div><div></div>
+            </div>
+            <div class="footer-bar flex-row" style="margin-top: 50px;">
+                <span>APLICACION ==> </span>
+                <input type="text" id="input-aplicacion" maxlength="1" class="input-green" autofocus style="width: 20px;">
+            </div>
+            <div class="error-msg" id="error-app">SELECCIONA 'A' (Altamira) o 'E' (Emulacion)</div>
+        </div>
+
+        <div id="screen-sun-login" class="screen green">
+            <div style="text-align: center; font-weight: bold;" class="yellow">B I E N V E N I D O</div>
+            <div class="flex-row" style="justify-content: space-between; margin-top: 20px;">
+                <div>
+                    <span class="yellow">CL/Supersession</span><br>
+                    <span class="yellow">MEXICO PRODUCCION</span>
+                </div>
+                <div style="text-align: right;">
+                    <span class="cyan">Fecha: 13/02/26</span><br>
+                    <span class="cyan">Hora : 09:15:00</span><br>
+                    <span class="cyan">Sistema: MEX4</span><br>
+                    <span class="cyan">Terminal: TCPPW671</span>
+                </div>
+            </div>
+            
+            <div style="margin: auto; border: 1px solid var(--text-yellow); padding: 15px; width: 350px;">
+                <div class="flex-row yellow" style="margin-bottom: 5px;"><span>Usuario...... </span><input type="text" id="sun-user" class="input-yellow" maxlength="8"></div>
+                <div class="flex-row yellow" style="margin-bottom: 5px;"><span>Password..... </span><input type="password" id="sun-pass" class="input-yellow" maxlength="8"></div>
+                <div class="yellow">Cambio Password ?  N (Y or N)</div>
+            </div>
+            <div class="footer-bar white">INTRO  F1 Ayuda  F3 Salida</div>
+        </div>
+
+        <div id="screen-sun-menu1" class="screen cyan">
+            <div class="flex-row white" style="justify-content: space-between; border-bottom: 1px solid; margin-bottom: 10px;">
+                <span>KLSVSEL1</span><span>CL/SUPERSESSION Main Menu</span><span>More:   +</span>
+            </div>
+            <div>Select sessions with a "/" or an action code.</div><br>
+            <div style="display: flex; gap: 20px; border-bottom: 1px dashed; margin-bottom: 10px;">
+                <span style="width: 100px;">Session ID</span><span style="width: 300px;">Description</span><span style="width: 80px;">Type</span><span>Status</span>
+            </div>
+            <div style="line-height: 1.5;" class="green">
+                _  CICCPP11    CICS AFP COLOMBIA PRODUCCION     Multi   Undefined<br>
+                _  CICMPTFZ    CICS PARA M. PAGO FINANZIA       Multi<br>
+                _  CICPPP11    CICS AFP PERU PRODUCCION         Multi   Undefined<br>
+                _  TSOAFPC     TSO AFP'S LATAM DESARROLLO       Multi   Undefined<br>
+                _  TSOAFPD     AFP'S DESARROLLO LATAM           Multi   Undefined<br>
+                _  TSOHD       TSO CHILE DESARROLLO (LATAM)     Multi<br>
+                _  TSOHP       TSO CHILE PRODUCCION             Multi<br>
+                _  CICLTW11    CICS TEST AFP                    Multi   Undefined<br>
+            </div>
+            <div class="footer-bar">
+                <div class="cyan">PRESIONA &lt;F8&gt; PARA AVANZAR A LA SIGUIENTE PANTALLA</div>
+            </div>
+        </div>
+
+        <div id="screen-sun-menu2" class="screen cyan">
+            <div class="flex-row white" style="justify-content: space-between; border-bottom: 1px solid; margin-bottom: 10px;">
+                <span>KLSVSEL1</span><span>CL/SUPERSESSION Main Menu</span><span>More:  -+</span>
+            </div>
+            <div>Select sessions with a "/" or an action code.</div><br>
+            <div style="display: flex; gap: 20px; border-bottom: 1px dashed; margin-bottom: 10px;">
+                <span style="width: 100px;">Session ID</span><span style="width: 300px;">Description</span><span style="width: 80px;">Type</span><span>Status</span>
+            </div>
+            <div style="line-height: 1.5;" class="green">
+                _  TSOAA       TSO PRUEBA                       Multi   Undefined<br>
+                _  TSOA        TSO AFP2 PRODUCCION              Multi   Undefined<br>
+                _  TSOD        TSO Perú Producción VIRTPASV     Multi<br>
+                <span class="white" style="background-color: #333;">_  TSOX1       TSO PARALLEL TSOX1               Multi            </span><br>
+                _  TSOX2       TSO PARALLEL TSOX2               Multi<br>
+                _  TSOX3       TSO PARALLEL TSOX3               Multi<br>
+                _  TSOX4       TSO PARALLEL TSOX4               Multi<br>
+            </div>
+            <div class="footer-bar flex-row">
+                <span>Command ===> </span>
+                <input type="text" id="input-tsox1" class="input-cyan" maxlength="10" placeholder="Escribe TSOX1">
+            </div>
+            <div class="error-msg" id="error-tsox1">Escribe TSOX1 y presiona Enter</div>
+        </div>
+
+        <div id="screen-sun-terms" class="screen cyan">
+            <div style="border: 1px solid var(--text-cyan); padding: 20px; margin: auto; max-width: 400px; text-align: center;">
+                <div class="white">_CS130</div><br>
+                <div>File transfer mode</div>
+                <div>Enabled for session "TSOX1"</div><br>
+                <div class="white blink">Press ENTER to continue</div>
+            </div>
+        </div>
+
+        <div id="screen-sun-comunidad" class="screen red">
+            <div class="white" style="margin-bottom: 20px;">
+                ICH70001I LAST ACCESS AT 12:16:48<br>
+                IKJ56455I LOGON IN PROGRESS
+            </div>
+            <div class="red-box">
+                *************************************************<br>
+                ** COMUNIDAD DE USUARIOS:                      **<br>
+                ** **<br>
+                ** SE LES INFORMA A LOS USUARIOS DEL DB2I      **<br>
+                ** QUE YA ESTA DISPONIBLE EL PROCEDIMIENTO     **<br>
+                ** DE LOGON IKJMEXP.                           **<br>
+                ** **<br>
+                ** ANTE CUALQUIER PROBLEMA PARA ENTRAR A SU    **<br>
+                ** SESION FAVOR DE REPORTAR VIA FUMEX AL       **<br>
+                ** CENTRO DE MANDO.                            **<br>
+                ** **<br>
+                ** INFRAESTRUCTURA DE BASE DE DATOS            **<br>
+                *************************************************
+            </div>
+            <div style="margin-top: 20px;" class="white blink">*** PRESIONA ENTER ***</div>
+        </div>
+
+        <div id="screen-sun-zos" class="screen green">
+            <div class="red" style="text-align: center; font-weight: bold; border-bottom: 1px solid; margin-bottom: 10px;">z/OS v1.11 INFRAESTRUCTURA CENTRAL PRODUCCION PU</div>
+            <div class="flex-row white" style="margin-bottom: 20px;">
+                <span>Seleccionar Opcion ===> </span>
+                <input type="text" id="input-opcion6" class="input-white" maxlength="1" style="width: 20px;">
+            </div>
+            <div class="flex-row" style="justify-content: space-between;">
+                <div>
+                    <span class="cyan">PDF</span><br>
+                    -------------------------<br>
+                    0 Settings<br>
+                    1 Browse<br>
+                    2 Edit<br>
+                    3 Utilities<br>
+                    4 Foreground<br>
+                    5 Batch<br>
+                    6 Command<br>
+                    7 Dialog Test
+                </div>
+                <div>
+                    <span class="cyan">Funciones Locales</span><br>
+                    -------------------------<br>
+                    OS System Support Options<br>
+                    OU User Options<br>
+                    SD SDSF<br><br><br>
+                    DB Ambiente DB2<br>
+                    PP Programas Producto
+                </div>
+            </div>
+            <div class="error-msg" id="error-opcion6">Selecciona la opción 6 y presiona Enter</div>
+        </div>
+
+        <div id="screen-sun-shell" class="screen green">
+            <div style="text-align: center; margin-bottom: 20px;" class="white">ISPF Command Shell</div>
+            <div>Enter TSO or Workstation commands below:</div>
+            <div class="flex-row white" style="margin: 10px 0; border-bottom: 1px solid var(--text-cyan); padding-bottom: 5px;">
+                <span>===> </span>
+                <input type="text" id="input-lu" class="input-cyan" maxlength="15" style="width: 300px;" placeholder="Ej: lu MB72975">
+            </div>
+            <div>Place cursor on choice and press enter to Retrieve command</div>
+            <div id="shell-history" style="margin-top: 10px; line-height: 1.5;">
+                => <br>=> <br>=> <br>
+            </div>
+            
+            <div id="shell-result" style="display: none; margin-top: 20px; border-top: 1px dashed var(--text-cyan); padding-top: 10px;" class="white">
+                USER=<span id="res-lu-user"></span>  NAME=<span id="res-lu-name"></span>  OWNER=<span id="res-lu-owner"></span>  CREATED=<span id="res-lu-created"></span><br>
+                DEFAULT-GROUP=<span id="res-lu-group"></span>  PASSDATE=<span id="res-lu-passdate"></span>  PASS-INTERVAL= 30 PHRASEDATE=N/A<br>
+                <span class="yellow" style="border: 1px solid var(--text-yellow); padding: 2px;">ATTRIBUTES=<span id="res-lu-attr"></span></span><br>
+                ***
+            </div>
+            <div class="error-msg" id="error-lu">Usuario no encontrado en Base de Datos</div>
+        </div>
+
+        <div id="screen-alt-start" class="screen cyan">
+            <div>ALTAMIRA (A) - SISTEMA CENTRAL BBVA</div><br>
+            <div>PRESIONA &lt;INTRO&gt; PARA INICIAR SESIÓN...</div>
+            <div class="blink">_</div>
+        </div>
+
+        <div id="screen-cesn" class="screen cyan">
+            <div class="header-bar">ALTAMIRA PROCESOS</div>
+            <div class="flex-row"><span>TRANSACCION:</span><input type="text" id="input-cesn" maxlength="4" class="input-cyan"></div>
+            <div class="error-msg" id="error-cesn">ESCRIBE "CESN"</div>
+        </div>
+
+        <div id="screen-login" class="screen cyan">
+            <div class="header-bar">CONTROL DE ACCESO - CESN</div><br>
+            <div class="flex-row"><span>USUARIO:</span> <input type="text" id="login-user" class="input-cyan"></div>
+            <div class="flex-row"><span>PASSWORD:</span> <input type="password" id="login-pass" class="input-cyan"></div><br>
+            <div id="login-status"></div>
+        </div>
+
+        <div id="screen-qsme" class="screen cyan">
+            <div class="header-bar">SISTEMA INICIADO CORRECTAMENTE</div><br>
+            <div class="flex-row"><span>TRANSACCION:</span><input type="text" id="input-qsme" maxlength="4" class="input-cyan"></div>
+            <div class="error-msg" id="error-qsme">ESCRIBE "QSME"</div>
+        </div>
+
+        <div id="screen-param" class="screen cyan">
+            <div class="header-bar">CONSULTA DE EMPLEADOS (QSME)</div><br>
+            <div class="flex-row"><span>PUESTO A CUBRIR:</span><input type="text" id="input-type" maxlength="1" class="input-cyan" style="width: 30px;"><span>(USE 'C')</span></div>
+            <div class="flex-row" id="row-usuario-afectado" style="display:none; margin-top: 10px;">
+                <span>USUARIO AFECTADO:</span><input type="text" id="input-target-user" maxlength="8" class="input-cyan">
+            </div>
+        </div>
+
+        <div id="screen-result" class="screen cyan">
+            <div class="white">_QSA0095 CONS. D USUARIO EFECTUADA CORRECTAMENTE</div>
+            <div style="border-bottom: 1px dashed; margin: 5px 0;">-------------------- LINEAS A PANTALLA --------------------</div>
+            <div class="green">EMPLEADO QUE CUBRE TEMPORALIDAD :</div>
+            <div style="display: grid; grid-template-columns: 150px 1fr; gap: 5px;">
+                <span class="green">USUARIO :</span> <span class="white" id="res-usuario"></span>
+                <span class="green">NOMBRE  :</span> <span class="white" id="res-nombre"></span>
+                <span class="green">NOMINA  :</span> <span class="white" id="res-nomina"></span>
+                <span class="green">PUESTO  :</span> <span class="white" id="res-puesto"></span>
+                <span class="green">CR. ASIG:</span> <span class="white" id="res-cr"></span>
+            </div>
+            <div style="margin-top: 15px;" class="green">MOTIVO Y PERIODO DE TEMPORALIDAD :</div>
+            <div style="display: grid; grid-template-columns: 100px 1fr; gap: 5px;">
+                <span class="green">MOTIVO   :</span> <span class="white" id="res-motivo"></span>
+                <span class="green">FECHA INI:</span> <span class="white" id="res-fec-ini"></span>
+                <span class="green">FECHA FIN:</span> <span class="white" id="res-fec-fin"></span>
+            </div>
+            <div style="margin-top: 20px; border: 1px solid; padding: 2px; width: fit-content;" class="yellow">
+                USUARIO EN TEMPORALIDAD? : <span class="white" id="res-es-temporal"></span>
+            </div>
+            <div style="margin-top: 10px;" class="white">OK <span class="blink">_</span></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- BASE DE DATOS UNIFICADA (10 COLABORADORES) ---
+        // Sirve para QSME (Altamira) y para LU (Emulacion SUN)
+        const db = {
+            "MB72975": { nombre: "ERIKA HERNANDEZ VASQUEZ", nomina: "009508149", puesto_cod: "0330", puesto_desc: "MULTIFUNCION", cr_cod: "0115", cr_desc: "SAN BARTOLO", temporal: "NO", motivo: "", f_ini: "", f_fin: "", sun_attr: "NONE", sun_owner: "ATNUSUAR", sun_created: "10.236", sun_group: "ATNUSUAR", sun_passdate: "25.203" },
+            "MI15431": { nombre: "PAOLA MORALES BARRON", nomina: "009900528", puesto_cod: "0004", puesto_desc: "CAJERO ADMINIST", cr_cod: "0644", cr_desc: "MAZATLAN PLAZA", temporal: "NO", motivo: "", f_ini: "", f_fin: "", sun_attr: "REVOKED", sun_owner: "GAUTHPD1", sun_created: "21.091", sun_group: "GAUTHPD1", sun_passdate: "13.009" },
+            "MI43277": { nombre: "ADRIAN ANTONIO MAGAÑA", nomina: "010160351", puesto_cod: "0137", puesto_desc: "ASESOR DIGITAL", cr_cod: "1166", cr_desc: "APATZINGAN CENTRO", temporal: "NO", motivo: "V VACACIONES", f_ini: "20250821", f_fin: "20801231", sun_attr: "NONE", sun_owner: "ATNUSUAR", sun_created: "15.100", sun_group: "ATNUSUAR", sun_passdate: "26.010" },
+            "MB80818": { nombre: "EFREN RUIZ DOMINGUEZ", nomina: "009599957", puesto_cod: "0001", puesto_desc: "DIRECTOR DE SUCURSAL", cr_cod: "0568", cr_desc: "JALAPA PLAZA CRYSTAL", temporal: "SI", motivo: "V VACACIONES", f_ini: "20240108", f_fin: "20240115", sun_attr: "REVOKED", sun_owner: "GAUTHPD1", sun_created: "18.305", sun_group: "GAUTHPD1", sun_passdate: "20.150" },
+            "M910813": { nombre: "DULCE ALEJANDRA CONTRERAS", nomina: "009108130", puesto_cod: "0001", puesto_desc: "DIRECTOR DE SUCURSAL", cr_cod: "3932", cr_desc: "CUAUTLA CENTRO", temporal: "NO", motivo: "", f_ini: "20250923", f_fin: "20801231", sun_attr: "NONE", sun_owner: "ATNUSUAR", sun_created: "12.050", sun_group: "ATNUSUAR", sun_passdate: "24.300" },
+            "MB10001": { nombre: "CARLOS ALBERTO PEREZ", nomina: "009220101", puesto_cod: "0205", puesto_desc: "EJECUTIVO PYME", cr_cod: "0021", cr_desc: "TORRE BBVA", temporal: "SI", motivo: "I INCAPACIDAD", f_ini: "20260201", f_fin: "20260215", sun_attr: "REVOKED", sun_owner: "GAUTHPD1", sun_created: "19.110", sun_group: "GAUTHPD1", sun_passdate: "21.005" },
+            "MB10002": { nombre: "LUCIA MENDEZ GARCIA", nomina: "009330202", puesto_cod: "0004", puesto_desc: "CAJERO PRINCIPAL", cr_cod: "4050", cr_desc: "MONTERREY TEC", temporal: "NO", motivo: "", f_ini: "", f_fin: "", sun_attr: "NONE", sun_owner: "ATNUSUAR", sun_created: "16.200", sun_group: "ATNUSUAR", sun_passdate: "25.100" },
+            "MB10003": { nombre: "ROBERTO GOMEZ BOLAÑOS", nomina: "008880303", puesto_cod: "0110", puesto_desc: "ASESOR PATRIMONIAL", cr_cod: "0500", cr_desc: "CANCUN HOTELERA", temporal: "SI", motivo: "C CURSO", f_ini: "20260210", f_fin: "20260212", sun_attr: "NONE", sun_owner: "ATNUSUAR", sun_created: "14.080", sun_group: "ATNUSUAR", sun_passdate: "26.040" },
+            "MB10004": { nombre: "ANA MARIA POLO", nomina: "007770404", puesto_cod: "0330", puesto_desc: "MULTIFUNCION", cr_cod: "1200", cr_desc: "GUADALAJARA SUR", temporal: "NO", motivo: "", f_ini: "", f_fin: "", sun_attr: "REVOKED", sun_owner: "GAUTHPD1", sun_created: "11.100", sun_group: "GAUTHPD1", sun_passdate: "12.200" },
+            "MB10005": { nombre: "JUAN GABRIEL AGUILERA", nomina: "006660505", puesto_cod: "0001", puesto_desc: "DIRECTOR DE ZONA", cr_cod: "0100", cr_desc: "CIUDAD JUAREZ", temporal: "SI", motivo: "P PERMISO", f_ini: "20260214", f_fin: "20260214", sun_attr: "NONE", sun_owner: "ATNUSUAR", sun_created: "09.300", sun_group: "ATNUSUAR", sun_passdate: "23.150" }
+        };
+
+        // --- CONTROL GENERAL DE PANTALLAS ---
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // --- NAVEGACION INICIAL ---
+        document.getElementById('input-aplicacion').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const val = this.value.toUpperCase();
+                if (val === 'E') {
+                    showScreen('screen-sun-login');
+                    document.getElementById('sun-user').focus();
+                } else if (val === 'A') {
+                    showScreen('screen-alt-start');
+                } else {
+                    document.getElementById('error-app').style.display = 'block';
+                    setTimeout(() => document.getElementById('error-app').style.display = 'none', 2000);
+                    this.value = '';
+                }
+            }
+        });
+
+        // ==========================================
+        // EVENTOS: EMULACION SUN (E)
+        // ==========================================
+        
+        // E1: Login
+        document.getElementById('sun-pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') showScreen('screen-sun-menu1');
+        });
+
+        // E2: F8 Listener global (solo funciona si menu1 está activo)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F8' && document.getElementById('screen-sun-menu1').classList.contains('active')) {
+                e.preventDefault(); // Evitar comportamiento del navegador
+                showScreen('screen-sun-menu2');
+                document.getElementById('input-tsox1').focus();
+            }
+        });
+
+        // E3: Seleccionar TSOX1
+        document.getElementById('input-tsox1').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value.toUpperCase().includes('TSOX1')) {
+                    showScreen('screen-sun-terms');
+                } else {
+                    document.getElementById('error-tsox1').style.display = 'block';
+                    setTimeout(() => document.getElementById('error-tsox1').style.display = 'none', 2000);
+                }
+            }
+        });
+
+        // E4: Enter en Terms
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('screen-sun-terms').classList.contains('active')) {
+                showScreen('screen-sun-comunidad');
+            }
+        });
+
+        // E5: Enter en Comunidad
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('screen-sun-comunidad').classList.contains('active')) {
+                showScreen('screen-sun-zos');
+                document.getElementById('input-opcion6').focus();
+            }
+        });
+
+        // E6: Menu z/OS (Opcion 6)
+        document.getElementById('input-opcion6').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value === '6') {
+                    showScreen('screen-sun-shell');
+                    document.getElementById('input-lu').focus();
+                } else {
+                    document.getElementById('error-opcion6').style.display = 'block';
+                    setTimeout(() => document.getElementById('error-opcion6').style.display = 'none', 2000);
+                }
+            }
+        });
+
+        // E7: ISPF Command Shell (lu MB...)
+        document.getElementById('input-lu').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const cmd = this.value.toUpperCase().trim();
+                if (cmd.startsWith('LU ')) {
+                    const userId = cmd.split(' ')[1];
+                    if (db[userId]) {
+                        document.getElementById('error-lu').style.display = 'none';
+                        const data = db[userId];
+                        document.getElementById('res-lu-user').innerText = userId;
+                        document.getElementById('res-lu-name').innerText = data.nombre.substring(0,25); // Limitar largo
+                        document.getElementById('res-lu-owner').innerText = data.sun_owner;
+                        document.getElementById('res-lu-created').innerText = data.sun_created;
+                        document.getElementById('res-lu-group').innerText = data.sun_group;
+                        document.getElementById('res-lu-passdate').innerText = data.sun_passdate;
+                        document.getElementById('res-lu-attr').innerText = data.sun_attr;
+                        
+                        document.getElementById('shell-result').style.display = 'block';
+                    } else {
+                        document.getElementById('error-lu').style.display = 'block';
+                        document.getElementById('shell-result').style.display = 'none';
+                    }
+                }
+            }
+        });
+
+        // ==========================================
+        // EVENTOS: ALTAMIRA (A)
+        // ==========================================
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('screen-alt-start').classList.contains('active')) {
+                showScreen('screen-cesn');
+                document.getElementById('input-cesn').focus();
+            }
+            if (e.key === 'Escape') { // Resetear QSME
+                if(document.getElementById('screen-result').classList.contains('active')){
+                    document.getElementById('input-target-user').value = '';
+                    document.getElementById('input-type').value = '';
+                    document.getElementById('row-usuario-afectado').style.display = 'none';
+                    showScreen('screen-param');
+                    document.getElementById('input-type').focus();
+                }
+            }
+        });
+
+        document.getElementById('input-cesn').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value.toUpperCase() === 'CESN') {
+                    showScreen('screen-login');
+                    document.getElementById('login-user').focus();
+                } else {
+                    document.getElementById('error-cesn').style.display = 'block';
+                    setTimeout(() => document.getElementById('error-cesn').style.display = 'none', 2000);
+                }
+            }
+        });
+
+        document.getElementById('login-pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('login-status').innerText = "ACCESO CONCEDIDO...";
+                setTimeout(() => { showScreen('screen-qsme'); document.getElementById('input-qsme').focus(); }, 800);
+            }
+        });
+
+        document.getElementById('input-qsme').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value.toUpperCase() === 'QSME') {
+                    showScreen('screen-param');
+                    document.getElementById('input-type').focus();
+                } else {
+                    document.getElementById('error-qsme').style.display = 'block';
+                    setTimeout(() => document.getElementById('error-qsme').style.display = 'none', 2000);
+                }
+            }
+        });
+
+        document.getElementById('input-type').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.toUpperCase() === 'C') {
+                document.getElementById('row-usuario-afectado').style.display = 'flex';
+                setTimeout(() => document.getElementById('input-target-user').focus(), 100);
+            }
+        });
+
+        document.getElementById('input-target-user').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const userId = this.value.toUpperCase();
+                if (db[userId]) {
+                    const data = db[userId];
+                    document.getElementById('res-usuario').innerText = userId;
+                    document.getElementById('res-nombre').innerText = data.nombre;
+                    document.getElementById('res-nomina').innerText = data.nomina;
+                    document.getElementById('res-puesto').innerText = data.puesto_cod + "   " + data.puesto_desc;
+                    document.getElementById('res-cr').innerText = data.cr_cod + "   " + data.cr_desc;
+                    document.getElementById('res-motivo').innerText = data.motivo;
+                    document.getElementById('res-fec-ini').innerText = data.f_ini ? `${data.f_ini}      (AAAAMMDD)` : "";
+                    document.getElementById('res-fec-fin').innerText = data.f_fin ? `${data.f_fin}      (AAAAMMDD)` : "";
+                    document.getElementById('res-es-temporal').innerText = data.temporal;
+                    showScreen('screen-result');
+                } else {
+                    alert("USUARIO NO ENCONTRADO EN BD");
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
